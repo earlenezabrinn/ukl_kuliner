@@ -102,19 +102,22 @@ export class RestaurantsController {
     },
   })
   @Put(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueName = Date.now() + extname(file.originalname);
-          callback(null, uniqueName);
-        },
-      }),
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
+@UseInterceptors(
+  FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, callback) => {
+        const fileName = file.originalname
+          .replace(/\s+/g, '-')
+          .toLowerCase();
+
+        callback(null, fileName);
+      },
     }),
-  )
+  }),
+)
   update(
     @Param('id') id: string,
     @Body() dto: CreateRestaurantDto,
