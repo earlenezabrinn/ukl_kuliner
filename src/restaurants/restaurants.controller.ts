@@ -63,16 +63,19 @@ export class RestaurantsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueName = Date.now() + extname(file.originalname);
-          callback(null, uniqueName);
-        },
-      }),
+  FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, callback) => {
+        const fileName = file.originalname
+          .replace(/\s+/g, '-')
+          .toLowerCase();
+
+        callback(null, fileName);
+      },
     }),
-  )
+  }),
+)
   create(@Body() dto: CreateRestaurantDto, @UploadedFile() image: Express.Multer.File) {
     return this.restaurantsService.create(dto, image);
   }
