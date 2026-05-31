@@ -48,32 +48,107 @@ export class ReservationsService {
     }
 
     // VALIDASI RESTAURANT
-    if (
-      table.restaurantId !==
-      dto.restaurantId
-    ) {
-      throw new BadRequestException(
-        'Table does not belong to this restaurant',
-      );
-    }
+    // VALIDASI RESTAURANT
+if (
+  table.restaurantId !==
+  dto.restaurantId
+) {
+  throw new BadRequestException(
+    'Table does not belong to this restaurant',
+  );
+}
 
-    // VALIDASI JAM
-    const reservationDate =
-      new Date(
-        dto.reservationDate,
-      );
+// AMBIL DATA RESTAURANT
+const restaurant =
+  await this.prisma.restaurant.findUnique({
+    where: {
+      id: dto.restaurantId,
+    },
+  });
 
-    const hour =
-      reservationDate.getHours();
+if (!restaurant) {
+  throw new BadRequestException(
+    'Restaurant not found',
+  );
+}
 
-    if (
-      hour < 10 ||
-      hour > 22
-    ) {
-      throw new BadRequestException(
-        'Restaurant only open from 10:00 - 22:00',
-      );
-    }
+// VALIDASI JAM RESTAURANT
+const reservationDate =
+  new Date(dto.reservationDate);
+
+const reservationHour =
+  reservationDate.getHours();
+
+function convertTo24Hour(
+  time: string,
+): number {
+  const [hourStr, period] =
+    time.trim().split(' ');
+
+  let hour =
+    parseInt(hourStr);
+
+  if (
+    period.toUpperCase() === 'PM' &&
+    hour !== 12
+  ) {
+    hour += 12;
+  }
+
+  if (
+    period.toUpperCase() === 'AM' &&
+    hour === 12
+  ) {
+    hour = 0;
+  }
+
+  return hour;
+}
+
+if (
+  !restaurant.openTime ||
+  !restaurant.closeTime
+) {
+  throw new BadRequestException(
+    'Restaurant opening hours not set',
+  );
+}
+
+const openHour =
+  convertTo24Hour(
+    restaurant.openTime,
+  );
+
+const closeHour =
+  convertTo24Hour(
+    restaurant.closeTime,
+  );
+
+let isOpen = false;
+
+// contoh:
+// 6 AM - 10 PM
+if (
+  openHour < closeHour
+) {
+  isOpen =
+    reservationHour >= openHour &&
+    reservationHour < closeHour;
+}
+
+// contoh:
+// 10 AM - 1 AM
+else {
+  isOpen =
+    reservationHour >= openHour ||
+    reservationHour < closeHour;
+}
+
+if (!isOpen) {
+  throw new BadRequestException(
+    `Restaurant only open from ${restaurant.openTime} - ${restaurant.closeTime}`,
+  );
+}
 
     // VALIDASI DOUBLE BOOKING
     const existingReservation =
