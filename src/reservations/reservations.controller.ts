@@ -55,6 +55,12 @@ export class ReservationsController {
       },
     },
   })
+  @ApiOperation({ summary: 'Lihat detail reservasi' })
+@Get(':id')
+findOne(@Param('id') id: string) {
+  return this.reservationsService.findOne(+id);
+}
+
   @Post('upload-payment/:id')
   @UseInterceptors(
     FileInterceptor('file', {

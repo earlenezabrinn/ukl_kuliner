@@ -47,7 +47,7 @@ export class ReservationsService {
       );
     }
 
-    // VALIDASI RESTAURANT
+
     // VALIDASI RESTAURANT
 if (
   table.restaurantId !==
@@ -240,6 +240,30 @@ if (!isOpen) {
       },
     });
   }
+
+  // GET DETAIL RESERVATION
+async findOne(id: number) {
+  const reservation =
+    await this.prisma.reservation.findUnique({
+      where: {
+        id,
+      },
+
+      include: {
+        user: true,
+        restaurant: true,
+        table: true,
+      },
+    });
+
+  if (!reservation) {
+    throw new BadRequestException(
+      'Reservation not found',
+    );
+  }
+
+  return reservation;
+}
 
   // GET MY RESERVATION
   async findMyReservations(
