@@ -77,8 +77,10 @@ const reservationDate =
   new Date(dto.reservationDate);
 
 const reservationHour =
-  reservationDate.getHours();
-
+  parseInt(
+    dto.reservationTime.split(':')[0],
+  );
+  
 function convertTo24Hour(
   time: string,
 ): number {
