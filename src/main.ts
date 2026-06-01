@@ -7,10 +7,17 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'https://sitifycoba.vercel.app/',
+    ],
+    credentials: true,
+  });
   // static folder uploads
-app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-  prefix: '/uploads/',
-});
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // Fix CORS
   app.enableCors({
