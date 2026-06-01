@@ -40,42 +40,49 @@ export class ReservationsController {
   }
 
   @ApiOperation({ summary: 'Lihat semua reservasi (Admin)' })
-  @Get()
-  findAll(@Query('status') status?: string) {
-    return this.reservationsService.findAll(status);
-  }
+@Get()
+findAll(@Query('status') status?: string) {
+  return this.reservationsService.findAll(status);
+}
 
-  @ApiOperation({ summary: 'Upload bukti pembayaran' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: { type: 'string', format: 'binary' },
-      },
-    },
-  })
-  @ApiOperation({ summary: 'Lihat detail reservasi' })
+@ApiOperation({ summary: 'Lihat detail reservasi' })
 @Get(':id')
 findOne(@Param('id') id: string) {
   return this.reservationsService.findOne(+id);
 }
 
-  @Post('upload-payment/:id')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueName = Date.now() + '-' + file.originalname;
-          callback(null, uniqueName);
-        },
-      }),
+@ApiOperation({ summary: 'Upload bukti pembayaran' })
+@ApiConsumes('multipart/form-data')
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      file: { type: 'string', format: 'binary' },
+    },
+  },
+})
+@Post('upload-payment/:id')
+@UseInterceptors(
+  FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, callback) => {
+        const uniqueName =
+          Date.now() + '-' + file.originalname;
+        callback(null, uniqueName);
+      },
     }),
-  )
-  uploadPayment(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
-    return this.reservationsService.uploadPayment(+id, file.filename);
-  }
+  }),
+)
+uploadPayment(
+  @Param('id') id: string,
+  @UploadedFile() file: Express.Multer.File,
+) {
+  return this.reservationsService.uploadPayment(
+    +id,
+    file.filename,
+  );
+}
 
   @ApiOperation({ summary: 'Konfirmasi pembayaran (Admin)' })
   @Patch('confirm/:id')
